@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import news_card with context %}
+{% block title %}{{ C.POST_TYPES.get(cur_type, '學校動態') }}｜{{ S.school_name }}{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="麵包屑"><ol><li><a href="/">首頁</a></li><li aria-current="page">學校動態</li></ol></nav>
+    <h1>{{ C.POST_TYPES.get(cur_type, '學校動態') }}</h1>
+    <p>最新消息、學生喜訊、校園活動及學習故事。</p>
+  </div>
+</section>
+<div class="container" style="padding:36px var(--gutter) 80px">
+  <nav class="filters" aria-label="分類">
+    <a class="chip" href="{{ url_for('public.news_list') }}" {% if not cur_type %}aria-pressed="true"{% endif %} style="text-decoration:none">全部</a>
+    {% for k, v in C.POST_TYPES.items() %}
+    <a class="chip" href="{{ url_for('public.news_list', type=k) }}" {% if cur_type == k %}aria-pressed="true" aria-current="page"{% endif %} style="text-decoration:none">{{ v }}</a>
+    {% endfor %}
+  </nav>
+  {% if items %}
+  <div class="grid grid-3">{% for p in items %}{{ news_card(p) }}{% endfor %}</div>
+  {% else %}<p>暫無內容。</p>{% endif %}
+  {% if pages > 1 %}
+  <nav class="filters" aria-label="分頁" style="margin-top:32px;justify-content:center">
+    {% for i in range(1, pages + 1) %}
+    <a class="chip" style="text-decoration:none" href="{{ url_for('public.news_list', type=cur_type or None, page=i) }}" {% if i == page %}aria-current="page" aria-pressed="true"{% endif %}>{{ i }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

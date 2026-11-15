@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% from "_macros.html" import news_card, award_card, event_item, voice_card, roadmap, media, tag_class with context %}
+{% block content %}
+
+{# ===== 1. 橫幅：新校長 + 三年發展計劃置於最顯眼位置 ===== #}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container">
+    <div>
+      <span class="hero-tag">{{ icon('sparkles', '', 16) }} <b>{{ S.hero_tag }}</b></span>
+      <h1 id="hero-title">{{ S.hero_title }}<br><span class="hl">{{ S.hero_title_hl }}</span></h1>
+      <p class="lead">{{ S.hero_lead }}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/parents#p1">{{ icon('grad') }}小一入學資訊</a>
+        <a class="btn btn-ghost" href="/development">了解三年發展計劃</a>
+      </div>
+      <div class="hero-pillars">
+        <a class="pillar-chip" href="/development#ai">
+          <span class="ico" style="background:var(--c-ai)">{{ icon('ai') }}</span>
+          <span><small>關注事項一</small><strong>{{ S.plan_ai_title }}</strong></span>
+        </a>
+        <a class="pillar-chip" href="/development#character">
+          <span class="ico" style="background:var(--c-char)">{{ icon('heart') }}</span>
+          <span><small>關注事項二</small><strong>{{ S.plan_char_title }}</strong></span>
+        </a>
+      </div>
+    </div>
+    <div class="hero-media">
+      <div class="video-card">
+        <div class="ph ph-navy" aria-hidden="true"><span class="ph-label">校園短片封面（請上載）</span></div>
+        {% if S.hero_video_url %}
+        <button class="play-btn" type="button" data-video="{{ S.hero_video_url }}" aria-label="播放影片：{{ S.hero_video_caption }}">{{ icon('play') }}</button>
+        {% else %}
+        <span class="play-btn" aria-hidden="true">{{ icon('play') }}</span>
+        {% endif %}
+        <div class="video-caption">{{ S.hero_video_caption }}</div>
+      </div>
+      <div class="hero-badge">
+        <span class="num">{{ S.hero_badge_num }}</span>
+        <small>{{ S.hero_badge_text }}</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ===== 2. 快捷入口 ===== #}
+<nav class="quick" aria-label="快捷入口">
+  <div class="container">
+    <div class="quick-grid">
+      <a class="quick-item is-key" href="/parents#p1"><span class="qi">{{ icon('grad') }}</span><strong>小一入學</strong><small>簡介會・計分準則</small></a>
+      <a class="quick-item" href="/development"><span class="qi">{{ icon('target') }}</span><strong>三年發展計劃</strong><small>2026–2029</small></a>
+      <a class="quick-item" href="#why"><span class="qi">{{ icon('star') }}</span><strong>學校特色</strong><small>為何選擇基道</small></a>
+      <a class="quick-item" href="{{ url_for('public.calendar') }}"><span class="qi">{{ icon('calendar') }}</span><strong>校曆</strong><small>假期・考試・活動</small></a>
+      <a class="quick-item" href="/info#notices"><span class="qi">{{ icon('bell') }}</span><strong>通告及表格</strong><small>午膳・校車・請假</small></a>
+      <a class="quick-item" href="/parents#faq"><span class="qi">{{ icon('chat') }}</span><strong>常見問題</strong><small>家長常問</small></a>
+    </div>
+  </div>
+</nav>
+
+{# ===== 3. 校長的話 ===== #}
+<section class="section" aria-labelledby="principal-title">
+  <div class="container principal">
+    <div class="principal-photo reveal">
+      <div class="ph ph-navy" aria-hidden="true"><span class="ph-label">校長近照（請上載）</span></div>
+      <div class="sig"><b>{{ S.principal_name }}</b>{{ S.principal_title }}</div>
+    </div>
+    <div class="reveal">
+      <span class="eyebrow">Principal's Message</span>
+      <h2 id="principal-title">校長的話</h2>
+      <blockquote class="quote">{{ S.principal_quote }}</blockquote>
+      <p>{{ S.principal_body }}</p>
+      {% if message %}
+      <p class="callout" style="margin-top:18px"><strong>最新校長短訊：<a href="{{ url_for('public.news_detail', post_id=message.id) }}">{{ message.title }}</a></strong>{{ message.summary }}</p>
+      {% endif %}
+      <div class="principal-actions">
+        <a class="btn btn-dark" href="/about#principal">閱讀校長的話</a>
+        {% if S.principal_video_url %}<button class="btn btn-outline" type="button" data-video="{{ S.principal_video_url }}">{{ icon('video') }}觀看校長短片</button>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ===== 4. 發展新里程 ===== #}
+<section class="section section-alt" aria-labelledby="plan-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">{{ S.plan_years }} School Development Plan</span>
+        <h2 id="plan-title">發展新里程：兩項三年重點</h2>
+        <p>每學期公布計劃進程，讓家長看見孩子的成長。</p>
+      </div>
+      <a class="link-more" href="/development">查看完整發展計劃</a>
+    </div>
+    <div class="plan-grid">
+      <article class="plan-card ai reveal">
+        <span class="num-badge">1</span>
+        <h3>{{ S.plan_ai_title }}</h3>
+        <ul>{% for line in S.plan_ai_points|lines %}<li>{{ line }}</li>{% endfor %}</ul>
+        <a class="link-more" href="/development#ai">自主探究與AI新學力</a>
+      </article>
+      <article class="plan-card char reveal">
+        <span class="num-badge">2</span>
+        <h3>{{ S.plan_char_title }}</h3>
+        <ul>{% for line in S.plan_char_points|lines %}<li>{{ line }}</li>{% endfor %}</ul>
+        <a class="link-more" href="/development#character">完全品格教育</a>
+      </article>
+    </div>
+    {{ roadmap() }}
+  </div>
+</section>
+
+{# ===== 5. 為何選擇基道 ===== #}
+<section class="section" id="why" aria-labelledby="why-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Why Kei To</span>
+        <h2 id="why-title">為何選擇基道</h2>
+        <p>家長最關心的，我們一一說清楚。</p>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      {% for h in highlights %}
+      {% set col = {'primary':['var(--c-primary)','var(--c-primary-soft)'],'ai':['var(--c-ai)','var(--c-ai-soft)'],'char':['var(--c-char)','var(--c-char-soft)'],'accent':['#c27713','var(--c-accent-soft)'],'rose':['var(--c-rose)','#fbe6ea']}.get(h.color, ['var(--c-primary)','var(--c-primary-soft)']) %}
+      <article class="card why-card reveal" style="--wc:{{ col[0] }};--wc-soft:{{ col[1] }}">
+        <span class="ico">{{ icon(h.icon) }}</span>
+        <h3>{{ h.title }}</h3>
+        <p>{{ h.text }}</p>
+        {% if h.link %}<a class="link-more" href="{{ h.link }}">了解更多<span class="visually-hidden">：{{ h.title }}</span></a>{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    <div class="stats">
+      {% for i in [1,2,3,4] %}<div class="stat"><div class="n">{{ S['stat_%d_n' % i] }}</div><div class="l">{{ S['stat_%d_l' % i] }}</div></div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ===== 6. 資訊分流：最新消息／學生喜訊／校園活動 ===== #}
+<section class="section section-alt" aria-labelledby="news-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">News</span>
+        <h2 id="news-title">學校動態</h2>
+      </div>
+      <a class="link-more" href="{{ url_for('public.news_list') }}">所有消息</a>
+    </div>
+    <div class="tabs" role="tablist" aria-label="學校動態分類">
+      <button class="tab" role="tab" id="tab-news" aria-controls="panel-news" aria-selected="true">最新消息</button>
+      <button class="tab" role="tab" id="tab-joy" aria-controls="panel-joy" aria-selected="false" tabindex="-1">學生喜訊</button>
+      <button class="tab" role="tab" id="tab-activity" aria-controls="panel-activity" aria-selected="false" tabindex="-1">校園活動</button>
+    </div>
+    {% for key, rows in [('news', news), ('joy', joy), ('activity', activity)] %}
+    <div class="tab-panel" role="tabpanel" id="panel-{{ key }}" aria-labelledby="tab-{{ key }}" {% if not loop.first %}hidden{% endif %}>
+      {% if rows %}
+      <div class="grid grid-3">{% for p in rows[:3] %}{{ news_card(p) }}{% endfor %}</div>
+      {% else %}<p>暫無內容。</p>{% endif %}
+      <p style="margin-top:22px"><a class="link-more" href="{{ url_for('public.news_list', type=key) }}">更多{{ C.POST_TYPES[key] }}</a></p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ===== 7. 精選成果故事（首頁只保留精選，完整名單在內頁） ===== #}
+<section class="section" aria-labelledby="stories-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Stories</span>
+        <h2 id="stories-title">成果與故事</h2>
+        <p>每一個獎項背後，都有孩子的努力與成長。</p>
+      </div>
+      <a class="link-more" href="/stories#awards">瀏覽全部學生成就</a>
+    </div>
+    {% if stories %}
+    {% set main = stories[0] %}
+    <div class="story-feature">
+      <a class="story-main reveal" href="{{ url_for('public.news_detail', post_id=main.id) }}">
+        {{ media(main.image, main.title, main.tag) }}
+        <div class="story-text">
+          <span class="tag {{ tag_class(main.tag) }}">{{ C.POST_TYPES[main.type] }}</span>
+          <h3>{{ main.title }}</h3>
+          <p>{{ main.summary }}</p>
+        </div>
+      </a>
+      <div class="story-list">
+        {% for p in stories[1:4] %}
+        <a class="story-row reveal" href="{{ url_for('public.news_detail', post_id=p.id) }}">
+          {{ media(p.image, p.title, p.tag) }}
+          <div><span class="tag {{ tag_class(p.tag) }}">{{ C.POST_TYPES[p.type] }}</span><h3>{{ p.title }}</h3><p>{{ p.date|zhdate }}</p></div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% if featured_awards %}
+    <h3 style="margin-top:44px">精選成果</h3>
+    <div class="grid grid-3">{% for a in featured_awards %}{{ award_card(a) }}{% endfor %}</div>
+    {% endif %}
+  </div>
+</section>
+
+{# ===== 8. 校曆 + 心聲 ===== #}
+<section class="section section-alt" aria-labelledby="cal-title">
+  <div class="container cal-wrap">
+    <div>
+      <div class="section-head" style="margin-bottom:20px">
+        <div><span class="eyebrow">Calendar</span><h2 id="cal-title">即將舉行</h2></div>
+        <a class="link-more" href="{{ url_for('public.calendar') }}">全年校曆</a>
+      </div>
+      {% if events %}<ul class="event-list">{% for e in events %}{{ event_item(e) }}{% endfor %}</ul>{% else %}<p>暫無活動。</p>{% endif %}
+    </div>
+    <div>
+      <div class="section-head" style="margin-bottom:20px">
+        <div><span class="eyebrow">Voices</span><h2>家長及學生心聲</h2></div>
+      </div>
+      <div class="grid">{% for v in voices %}{{ voice_card(v) }}{% endfor %}</div>
+    </div>
+  </div>
+</section>
+
+{# ===== 9. 小一入學 CTA ===== #}
+<section class="section" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2 id="cta-title">準備升讀小一？</h2>
+        <p>歡迎參加我們的開放日及小一入學簡介會，親身感受基道的學習氣氛。</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-dark" href="/parents#p1">小一入學資訊 {{ icon('arrow-right') }}</a>
+        <a class="btn btn-light" href="/parents#faq">家長常見問題 {{ icon('arrow-right') }}</a>
+        <a class="btn btn-light" href="/info#contact">聯絡校務處 {{ icon('arrow-right') }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

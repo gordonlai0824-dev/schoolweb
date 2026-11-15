@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_item with context %}
+{% block title %}校曆｜{{ S.school_name }}{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="麵包屑"><ol><li><a href="/">首頁</a></li><li><a href="/parents">家長專區</a></li><li aria-current="page">校曆</li></ol></nav>
+    <h1>校曆</h1>
+    <p>學校活動、考試及假期一覽。如有更改，以學校通告為準。</p>
+  </div>
+</section>
+<div class="container" style="padding:40px var(--gutter) 80px;max-width:900px">
+  <p style="display:flex;gap:16px;flex-wrap:wrap;font-size:.88rem;color:var(--c-muted)">
+    {% for k, v in C.EVENT_KINDS.items() %}<span>● {{ v }}</span>{% endfor %}
+  </p>
+  {% for ym, rows in months.items() %}
+  <h2 style="margin-top:36px">{{ ym[:4] }}年{{ ym[5:7]|int }}月</h2>
+  <ul class="event-list">{% for e in rows %}{{ event_item(e) }}{% endfor %}</ul>
+  {% else %}
+  <p>暫無校曆資料。</p>
+  {% endfor %}
+</div>
+{% endblock %}

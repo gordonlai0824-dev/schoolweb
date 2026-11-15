@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import widget with context %}
+{% block title %}{{ p.title }}｜{{ S.school_name }}{% endblock %}
+{% block description %}{{ p.intro }}{% endblock %}
+{% block content %}
+<section class="page-hero {{ p.style if p.style != 'default' else '' }}">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="{{ 'Breadcrumb' if is_en else '麵包屑' }}">
+      <ol><li><a href="/">{{ 'Home' if is_en else '首頁' }}</a></li><li aria-current="page">{{ p.title }}</li></ol>
+    </nav>
+    <h1>{{ p.title }}{% if p.title_en and not is_en %} <small style="font-size:.45em;font-weight:500;opacity:.75;letter-spacing:.05em">{{ p.title_en }}</small>{% endif %}</h1>
+    {% if is_en %}<p>{{ S.school_name_en }}</p>{% endif %}
+    {% if p.intro %}<p>{{ p.intro }}</p>{% endif %}
+  </div>
+</section>
+
+<div class="container page-layout">
+  <aside class="subnav" aria-label="{{ 'On this page' if is_en else '本頁內容' }}">
+    <h2>{{ 'On this page' if is_en else '本頁內容' }}</h2>
+    <ul>{% for item in sections %}<li><a href="#{{ item.s.anchor }}">{{ item.s.title }}</a></li>{% endfor %}</ul>
+  </aside>
+  <div class="page-content">
+    {% for item in sections %}
+    {% set s = item.s %}
+    <section id="{{ s.anchor }}" aria-labelledby="h-{{ s.anchor }}">
+      <h2 id="h-{{ s.anchor }}">{% if s.icon %}<span class="h-ico">{{ icon(s.icon) }}</span>{% endif %}{{ s.title }}</h2>
+      {{ s.body|safe }}
+      {% if item.w %}<div class="widget">{{ widget(item.w, is_en) }}</div>{% endif %}
+    </section>
+    {% else %}
+    <p>{{ 'Content coming soon.' if is_en else '內容整理中。' }}</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

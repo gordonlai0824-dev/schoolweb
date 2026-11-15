@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="{{ 'en' if is_en else 'zh-Hant-HK' }}" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ S.school_name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ S.school_name }} — {{ S.plan_ai_title }}；{{ S.plan_char_title }}。{% endblock %}">
+  <meta name="theme-color" content="#1d4479">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.description() }}">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>document.documentElement.classList.remove('no-js');try{var f=localStorage.getItem('kt-fs');if(f)document.documentElement.classList.add(f)}catch(e){}</script>
+</head>
+<body>
+<a class="skip-link" href="#main">{{ 'Skip to content' if is_en else '跳至主要內容' }}</a>
+
+{% if S.show_proto_note == '1' and S.proto_note %}
+<div class="proto-note" role="note">{{ S.proto_note }}</div>
+{% endif %}
+
+<div class="topbar">
+  <div class="container">
+    <ul class="topbar-links" aria-label="家長最常查閱">
+      <li><span>家長最常查閱：</span><a href="{{ url_for('public.calendar') }}">校曆</a></li>
+      <li><a href="/info#notices">通告及表格</a></li>
+      <li><a href="/parents#p1">小一入學</a></li>
+      <li><a href="/parents#daily">午膳及校車</a></li>
+      <li><a href="/info#contact">聯絡我們</a></li>
+    </ul>
+    <div class="topbar-tools">
+      <div class="fs-group" role="group" aria-label="字體大小">
+        <button class="fs-btn" type="button" data-fs="" aria-pressed="true" title="標準字體">A</button>
+        <button class="fs-btn" type="button" data-fs="fs-lg" aria-pressed="false" title="較大字體">A+</button>
+        <button class="fs-btn" type="button" data-fs="fs-xl" aria-pressed="false" title="最大字體">A++</button>
+      </div>
+      {% if is_en %}<a class="lang-link" href="/" lang="zh-Hant">中文</a>{% else %}<a class="lang-link" href="/en" lang="en">EN</a>{% endif %}
+    </div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="/" aria-label="{{ S.school_name }} 首頁">
+      <img class="brand-logo" src="{{ url_for('static', filename='img/logo.svg') }}" alt="">
+      <span class="brand-text">
+        <span class="brand-name">{{ S.school_name }}</span>
+        <span class="brand-sub">{{ S.school_name_en }}</span>
+      </span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="開啟選單">
+      {{ icon('menu', 'ico-open') }}
+    </button>
+    <nav class="main-nav" id="main-nav" aria-label="主選單">
+      <ul class="nav-list">
+        {% for item in NAV %}
+        {% set p = item.page %}
+        {% set active = request.path == '/' ~ p.slug %}
+        <li class="nav-item">
+          {% if item.sections %}
+          <button class="nav-link" type="button" aria-expanded="false" {% if active %}aria-current="page"{% endif %}>{{ p.title }}{{ icon('chevron', 'chev') }}</button>
+          <ul class="dropdown">
+            <li><a href="/{{ p.slug }}">{{ p.title }}概覽</a></li>
+            {% for s in item.sections %}<li><a href="/{{ p.slug }}#{{ s.anchor }}">{{ s.title }}</a></li>{% endfor %}
+          </ul>
+          {% else %}
+          <a class="nav-link" href="/{{ p.slug }}" {% if active %}aria-current="page"{% endif %}>{{ p.title }}</a>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/">
+          <img class="brand-logo" src="{{ url_for('static', filename='img/logo.svg') }}" alt="">
+          <span class="brand-text"><span class="brand-name">{{ S.school_name }}</span><span class="brand-sub">{{ S.school_name_en }}</span></span>
+        </a>
+        <p>{{ S.address }}</p>
+        <p>電話：{{ S.phone }}　傳真：{{ S.fax }}</p>
+        <p>電郵：{{ S.email }}</p>
+        <p>辦學團體：{{ S.sponsor }}</p>
+      </div>
+      {% for item in NAV[:4] %}
+      <div>
+        <h2>{{ item.page.title }}</h2>
+        <ul>{% for s in item.sections[:6] %}<li><a href="/{{ item.page.slug }}#{{ s.anchor }}">{{ s.title }}</a></li>{% endfor %}</ul>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="footer-bottom">
+      <span>© {{ today[:4] }} {{ S.school_name }}{% if S.footer_note %}　{{ S.footer_note }}{% endif %}</span>
+      <ul>
+        {% for item in NAV[4:] %}<li><a href="/{{ item.page.slug }}">{{ item.page.title }}</a></li>{% endfor %}
+        <li><a href="{{ url_for('public.news_list') }}">全部消息</a></li>
+        <li><a href="/en">English</a></li>
+        <li><a href="{{ url_for('admin.dashboard') }}" rel="nofollow">教職員登入</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<button class="back-top" type="button" aria-label="返回頁首">{{ icon('arrow-up') }}</button>
+<script src="{{ url_for('static', filename='js/site.js') }}" defer></script>
+</body>
+</html>

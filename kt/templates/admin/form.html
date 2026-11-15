@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ '修改' if row else '新增' }}{{ res.singular }}{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / <a href="{{ url_for('admin.res_list', res_name=res_name) }}">{{ res.label }}</a> / {{ '修改' if row else '新增' }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ '修改' if row else '新增' }}{{ res.singular }}</h1>
+  <div class="actions">
+    {% if preview %}<a class="btn-s" href="{{ preview }}" target="_blank" rel="noopener">{{ icon('eye') }}在網站檢視</a>{% endif %}
+    {% if row and not res.no_create and res_name != 'users' %}
+    <form class="inline" method="post" action="{{ url_for('admin.res_copy', res_name=res_name, rid=row.id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn-s" type="submit">{{ icon('layers') }}複製</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<form class="edit-form" method="post" enctype="multipart/form-data" data-dirty-check>
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="form-grid">
+    {% for name, label, type_, opt in res.fields %}
+    {% set val = values.get(name, '') if values.get(name) is not none else '' %}
+    {% set err = errors.get(name) %}
+    <div class="fld-row {% if type_ in ('richtext','textarea','image','file') %}full{% endif %} {% if err %}has-err{% endif %}">
+      {% if type_ == 'checkbox' %}
+        <label class="check"><input type="checkbox" name="{{ name }}" value="1" {% if val %}checked{% endif %}> <span>{{ label }}</span></label>
+      {% else %}
+        <label class="lbl" for="f-{{ name }}">{{ label }}{% if opt.required %} <span class="req" aria-label="必填">*</span>{% endif %}</label>
+        {% if type_ in ('select', 'page', 'schoolyear', 'icon') %}
+          <select id="f-{{ name }}" name="{{ name }}" {% if opt.required %}required{% endif %} {% if type_ == 'icon' %}data-icon-select{% endif %}>
+            {% if not opt.required and type_ != 'icon' and '' not in field_choices((name, label, type_, opt)) %}<option value="">（請選擇）</option>{% endif %}
+            {% for k, v in field_choices((name, label, type_, opt)).items() %}
+            <option value="{{ k }}" {% if val|string == k|string %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+          {% if type_ == 'icon' %}<span class="icon-preview" data-icon-preview aria-hidden="true">{% if val %}{{ icon(val) }}{% endif %}</span>{% endif %}
+        {% elif type_ == 'textarea' %}
+          <textarea id="f-{{ name }}" name="{{ name }}" rows="4" {% if opt.required %}required{% endif %}>{{ val }}</textarea>
+        {% elif type_ == 'richtext' %}
+          <div class="rte" data-rte>
+            <textarea id="f-{{ name }}" name="{{ name }}" rows="14">{{ val }}</textarea>
+          </div>
+        {% elif type_ == 'date' %}
+          <input id="f-{{ name }}" type="date" name="{{ name }}" value="{{ val }}" min="2000-01-01" {% if opt.required %}required{% endif %}>
+        {% elif type_ == 'number' %}
+          <input id="f-{{ name }}" type="number" name="{{ name }}" value="{{ val }}" step="1">
+        {% elif type_ == 'password' %}
+          <input id="f-{{ name }}" type="password" name="{{ name }}" autocomplete="new-password" minlength="8">
+        {% elif type_ in ('image', 'file') %}
+          {% if val %}
+          <div class="file-current">
+            {% if type_ == 'image' %}<img src="{{ url_for('public.uploads', name=val) }}" alt="現有相片" class="thumb">{% else %}<a href="{{ url_for('public.uploads', name=val) }}" target="_blank" rel="noopener">{{ icon('file') }} 現有檔案</a>{% endif %}
+            <label class="check"><input type="checkbox" name="{{ name }}__remove" value="1"> 移除</label>
+          </div>
+          {% endif %}
+          <input id="f-{{ name }}" type="file" name="{{ name }}" {% if type_ == 'image' %}accept="image/*" data-preview{% endif %}>
+        {% elif type_ == 'url' %}
+          <input id="f-{{ name }}" type="text" inputmode="url" name="{{ name }}" value="{{ val }}" placeholder="https://… 或 /頁面#區塊">
+        {% else %}
+          <input id="f-{{ name }}" type="text" name="{{ name }}" value="{{ val }}" {% if opt.required %}required{% endif %} {% if name == 'anchor' %}pattern="[a-z0-9][a-z0-9\-]*"{% endif %}>
+        {% endif %}
+      {% endif %}
+      {% if err %}<p class="err" role="alert">{{ err }}</p>{% endif %}
+      {% if opt.help %}<p class="help">{{ opt.help }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="form-foot">
+    <button class="btn-p" type="submit">{{ icon('check') }}儲存</button>
+    {% if not res.no_create %}<button class="btn-s" type="submit" name="_next" value="new">儲存並新增另一項</button>{% endif %}
+    <a class="btn-s ghost" href="{{ url_for('admin.res_list', res_name=res_name) }}">返回列表</a>
+    {% if row and row['updated_at'] is defined %}<span class="muted small">最後修改：{{ row['updated_at'] or '—' }}{% if row['updated_by'] %}（{{ row['updated_by'] }}）{% endif %}</span>{% endif %}
+  </div>
+</form>
+
+{% if row and not res.no_delete and not (res_name == 'users' and row.id == user.id) %}
+<form class="danger-zone" method="post" action="{{ url_for('admin.res_delete', res_name=res_name, rid=row.id) }}" data-confirm="確定刪除？刪除後無法復原。">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <button class="btn-s danger" type="submit">{{ icon('trash') }}刪除此{{ res.singular }}</button>
+  <span class="muted small">如只想暫時不顯示，請取消勾選「公開顯示」。</span>
+</form>
+{% endif %}
+{% endblock %}

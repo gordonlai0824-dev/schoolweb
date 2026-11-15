@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% block title %}資料檢查{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / 資料檢查{% endblock %}
+{% block content %}
+<h1>資料檢查</h1>
+<p class="muted">系統自動核對日期、比賽年份、重複資料、待填寫內容及網站內部連結。建議每月檢查一次。</p>
+{% for it in issues %}
+<section class="panel check-panel {{ it.level }} {% if not it['items'] %}clean{% endif %}">
+  <h2>
+    {% if not it['items'] %}{{ icon('check') }}{% elif it.level == 'error' %}{{ icon('alert') }}{% else %}{{ icon('bell') }}{% endif %}
+    {{ it.title }} <span class="count">{{ it['items']|length }}</span>
+  </h2>
+  {% if it.help %}<p class="muted small">{{ it.help }}</p>{% endif %}
+  {% if it['items'] %}
+  <ul>
+    {% for t, rid, label in it['items'] %}
+    <li>
+      {% if t == 'settings' %}<a href="{{ url_for('admin.settings') }}">{{ label }}</a>
+      {% else %}<a href="{{ url_for('admin.res_edit', res_name=t, rid=rid) }}">{{ label }}</a> <span class="muted small">{{ RES[t].label }}</span>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

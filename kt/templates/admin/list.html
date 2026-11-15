@@ -1,0 +1,75 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ res.label }}{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / {{ res.label }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ res.label }} <small class="muted">共 {{ total }} 項</small></h1>
+  <div class="actions">
+    {% if res_name == 'awards' %}<a class="btn-s" href="{{ url_for('admin.awards_import') }}">{{ icon('upload') }}大量匯入</a>{% endif %}
+    {% if not res.no_create %}<a class="btn-p" href="{{ url_for('admin.res_edit', res_name=res_name, **active_filters) }}">{{ icon('plus') }}新增{{ res.singular }}</a>{% endif %}
+  </div>
+</div>
+
+<form class="toolbar" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="搜尋…" aria-label="搜尋">
+  {% for name, label, choices in filters %}
+  <select name="{{ name }}" aria-label="{{ label }}" onchange="this.form.submit()">
+    <option value="">全部{{ label }}</option>
+    {% for k, v in choices.items() %}{% if k %}<option value="{{ k }}" {% if active_filters.get(name) == k|string %}selected{% endif %}>{{ v }}</option>{% endif %}{% endfor %}
+  </select>
+  {% endfor %}
+  <button class="btn-s" type="submit">搜尋</button>
+  {% if q or active_filters %}<a class="btn-s ghost" href="{{ url_for('admin.res_list', res_name=res_name) }}">清除</a>{% endif %}
+</form>
+
+{% if rows %}
+<div class="tbl-wrap">
+<table class="tbl">
+  <thead><tr>{% for c, label, f in cols %}<th>{{ label }}</th>{% endfor %}<th class="right">操作</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    {% set pub_col = 'visible' if res_name == 'sections' else 'in_nav' if res_name == 'pages' else 'active' if res_name == 'users' else 'published' %}
+    <tr class="{% if not r[pub_col] %}is-off{% endif %}">
+      {% for c, label, f in cols %}
+      <td class="{% if loop.index0 == 2 or c in ('title','competition','question','name') %}main-col{% endif %}">
+        {% if c == pub_col %}
+          <form method="post" action="{{ url_for('admin.res_toggle', res_name=res_name, rid=r.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="pill {{ 'on' if r[c] else 'off' }}" type="submit" title="按此切換" {% if res_name == 'users' and r.id == user.id %}disabled{% endif %}>{{ ('公開' if pub_col == 'published' else '顯示' if pub_col != 'active' else '啟用') if r[c] else ('隱藏' if pub_col != 'active' else '停用') }}</button>
+          </form>
+        {% elif c in ('title','competition','question','name','username') %}
+          <a href="{{ url_for('admin.res_edit', res_name=res_name, rid=r.id) }}">{{ r[c]|truncate(48, True, '…') }}</a>
+        {% elif c == 'file' %}
+          {{ '✓ 已上載' if r.file else ('連結' if r.url else '—') }}
+        {% elif f %}
+          {{ display(f, r[c])|string|truncate(40, True, '…') }}
+        {% else %}
+          {{ r[c] or '—' }}
+        {% endif %}
+      </td>
+      {% endfor %}
+      <td class="right nowrap">
+        <a class="btn-s" href="{{ url_for('admin.res_edit', res_name=res_name, rid=r.id) }}">{{ icon('edit') }}修改</a>
+        {% if not res.no_delete and not (res_name == 'users' and r.id == user.id) %}
+        <form class="inline" method="post" action="{{ url_for('admin.res_delete', res_name=res_name, rid=r.id) }}" data-confirm="確定刪除「{{ (r.title or r.competition or r.question or r.name or r.username or '此項目')|truncate(30) }}」？刪除後無法復原。">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn-s danger" type="submit" aria-label="刪除">{{ icon('trash') }}</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if pages > 1 %}
+<nav class="pager" aria-label="分頁">
+  {% for i in range(1, pages + 1) %}
+  <a class="{% if i == page %}on{% endif %}" href="{{ url_for('admin.res_list', res_name=res_name, page=i, q=q or None, **active_filters) }}">{{ i }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% else %}
+<div class="empty">沒有資料。{% if not res.no_create %}<a href="{{ url_for('admin.res_edit', res_name=res_name, **active_filters) }}">新增第一項</a>{% endif %}</div>
+{% endif %}
+{% endblock %}

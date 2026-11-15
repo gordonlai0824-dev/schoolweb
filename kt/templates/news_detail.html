@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import news_card, media, tag_class with context %}
+{% block title %}{{ p.title }}｜{{ S.school_name }}{% endblock %}
+{% block description %}{{ p.summary or p.title }}{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="麵包屑">
+      <ol><li><a href="/">首頁</a></li><li><a href="{{ url_for('public.news_list', type=p.type) }}">{{ C.POST_TYPES.get(p.type) }}</a></li><li aria-current="page">{{ p.title|truncate(20, True, '…') }}</li></ol>
+    </nav>
+    <h1 style="max-width:900px">{{ p.title }}</h1>
+    <p><time datetime="{{ p.date }}">{{ p.date|zhdate }}</time>{% if p.tag %}　<span class="tag {{ tag_class(p.tag) }}">{{ C.POST_TAGS.get(p.tag) }}</span>{% endif %}</p>
+  </div>
+</section>
+<article class="container" style="max-width:860px;padding:40px var(--gutter) 64px">
+  {% if p.image %}<div style="margin-bottom:28px">{{ media(p.image, p.title, p.tag, 'ph-wide') }}</div>{% endif %}
+  {% if p.summary %}<p class="lead">{{ p.summary }}</p>{% endif %}
+  <div class="page-content prose">{{ p.body|safe }}</div>
+  <p style="margin-top:32px"><a class="link-more" href="{{ url_for('public.news_list', type=p.type) }}">返回{{ C.POST_TYPES.get(p.type) }}</a></p>
+</article>
+{% if related %}
+<section class="section section-alt" style="padding-top:48px">
+  <div class="container">
+    <h2>相關內容</h2>
+    <div class="grid grid-3">{% for r in related %}{{ news_card(r) }}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

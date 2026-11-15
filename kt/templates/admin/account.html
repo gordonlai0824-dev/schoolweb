@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block title %}帳戶設定{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / 帳戶設定{% endblock %}
+{% block content %}
+<h1>帳戶設定</h1>
+<p class="muted">登入名稱：{{ user.username }}・權限：{{ '管理員' if user.role == 'admin' else '編輯' }}</p>
+<form method="post" class="edit-form" style="max-width:480px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="fld-row full"><label class="lbl" for="cur">現有密碼</label><input id="cur" type="password" name="current" autocomplete="current-password" required></div>
+  <div class="fld-row full"><label class="lbl" for="new">新密碼</label><input id="new" type="password" name="new" autocomplete="new-password" minlength="8" required><p class="help">最少 8 個字元。</p></div>
+  <div class="fld-row full"><label class="lbl" for="new2">再次輸入新密碼</label><input id="new2" type="password" name="new2" autocomplete="new-password" minlength="8" required></div>
+  <div class="form-foot"><button class="btn-p" type="submit">更改密碼</button></div>
+</form>
+{% endblock %}

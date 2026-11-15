@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% block title %}網站設定{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / 網站設定{% endblock %}
+{% block content %}
+<div class="page-head"><h1>網站設定</h1><a class="btn-s" href="/" target="_blank" rel="noopener">{{ icon('eye') }}檢視首頁</a></div>
+<form method="post" class="edit-form" data-dirty-check>
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <input type="hidden" name="tab" value="{{ tab or groups[0][0] }}" data-tab-input>
+  <div class="settings-tabs" role="tablist">
+    {% for gname, items in groups %}
+    <button type="button" role="tab" class="stab" data-tab="{{ gname }}" aria-selected="{{ 'true' if (tab or groups[0][0]) == gname else 'false' }}">{{ gname }}</button>
+    {% endfor %}
+  </div>
+  {% for gname, items in groups %}
+  <fieldset class="form-grid" data-panel="{{ gname }}" {% if (tab or groups[0][0]) != gname %}hidden{% endif %}>
+    <legend class="visually-hidden">{{ gname }}</legend>
+    {% for key, label, t in items %}
+    <div class="fld-row {% if t == 'textarea' %}full{% endif %}">
+      <label class="lbl" for="s-{{ key }}">{{ label }}</label>
+      {% if t == 'textarea' %}
+      <textarea id="s-{{ key }}" name="{{ key }}" rows="4">{{ values.get(key, '') }}</textarea>
+      {% else %}
+      <input id="s-{{ key }}" name="{{ key }}" value="{{ values.get(key, '') }}">
+      {% endif %}
+    </div>
+    {% endfor %}
+  </fieldset>
+  {% endfor %}
+  <div class="form-foot"><button class="btn-p" type="submit">{{ icon('check') }}儲存設定</button></div>
+</form>
+{% endblock %}

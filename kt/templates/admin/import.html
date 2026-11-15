@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+{% block title %}大量匯入學生成就{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / <a href="{{ url_for('admin.res_list', res_name='awards') }}">學生成就</a> / 大量匯入{% endblock %}
+{% block content %}
+<h1>大量匯入學生成就</h1>
+<div class="panel">
+  <p>由 Excel 複製以下五欄（不用標題列），直接貼上；或上載 CSV 檔（UTF-8）。學年會按日期自動計算。</p>
+  <div class="tbl-wrap"><table class="tbl compact">
+    <thead><tr><th>日期</th><th>範疇</th><th>比賽名稱</th><th>獎項</th><th>得獎學生</th></tr></thead>
+    <tbody><tr><td>2026-11-08</td><td>學術與創科</td><td>全港小學編程比賽</td><td>金獎</td><td>5A 陳同學、5B 李同學</td></tr></tbody>
+  </table></div>
+  <p class="muted small">範疇必須是：{{ C.AWARD_CATEGORIES.values()|join('、') }}。</p>
+</div>
+<form method="post" enctype="multipart/form-data" class="edit-form">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="fld-row full"><label class="lbl" for="data">貼上資料</label><textarea id="data" name="data" rows="10" placeholder="2026-11-08	學術與創科	全港小學編程比賽	金獎	5A 陳同學">{{ text }}</textarea></div>
+  <div class="fld-row full"><label class="lbl" for="csvfile">或上載 CSV</label><input id="csvfile" type="file" name="csvfile" accept=".csv,text/csv"></div>
+  <div class="form-foot"><button class="btn-s" type="submit">{{ icon('eye') }}預覽及檢查</button></div>
+
+  {% if report %}
+  <section class="panel">
+    <h2>檢查結果：{{ report.ok|length }} 項正確，{{ report.bad|length }} 項有問題</h2>
+    {% if report.bad %}
+    <div class="tbl-wrap"><table class="tbl compact">
+      <thead><tr><th>行</th><th>內容</th><th>問題</th></tr></thead>
+      <tbody>{% for i, rec, msg in report.bad %}<tr class="row-err"><td>{{ i }}</td><td>{{ rec|join(' | ') }}</td><td class="err">{{ msg }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="err">請修正以上問題後再預覽。</p>
+    {% endif %}
+    {% if report.ok %}
+    <div class="tbl-wrap"><table class="tbl compact">
+      <thead><tr><th>學年</th><th>日期</th><th>範疇</th><th>比賽</th><th>獎項</th><th>學生</th></tr></thead>
+      <tbody>{% for r in report.ok %}<tr><td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ C.AWARD_CATEGORIES[r[2]] }}</td><td>{{ r[3] }}</td><td>{{ r[4] }}</td><td>{{ r[5] }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% if not report.bad %}<div class="form-foot"><button class="btn-p" type="submit" name="confirm" value="1">{{ icon('check') }}確認匯入 {{ report.ok|length }} 項</button></div>{% endif %}
+    {% endif %}
+  </section>
+  {% endif %}
+</form>
+{% endblock %}

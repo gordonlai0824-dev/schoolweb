@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+{% block title %}修改紀錄{% endblock %}
+{% block crumbs %}<a href="{{ url_for('admin.dashboard') }}">主控台</a> / 修改紀錄{% endblock %}
+{% block content %}
+<h1>修改紀錄 <small class="muted">最近 300 項</small></h1>
+<div class="tbl-wrap"><table class="tbl">
+  <thead><tr><th>時間</th><th>帳戶</th><th>動作</th><th>內容</th></tr></thead>
+  <tbody>{% for r in rows %}<tr><td class="nowrap">{{ r.at }}</td><td>{{ r.username }}</td><td>{{ r.action }}</td><td>{{ r.target }}</td></tr>{% else %}<tr><td colspan="4">暫無紀錄。</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% block title %}主控台{% endblock %}
+{% block crumbs %}主控台{% endblock %}
+{% block content %}
+<h1>你好，{{ user.display_name }}</h1>
+<p class="muted">今日是 {{ today|zhdate }}。以下是常用的更新工作。</p>
+
+{% if issue_count %}
+<a class="notice warn" href="{{ url_for('admin.check') }}">{{ icon('alert') }}<span><b>資料檢查發現 {{ issue_count }} 項需要留意的內容</b>例如日期錯誤、待填寫內容或失效連結。按此查看。</span></a>
+{% else %}
+<div class="notice ok">{{ icon('check') }}<span><b>資料檢查：沒有發現問題</b>日期、連結及內容狀態正常。</span></div>
+{% endif %}
+
+<h2>快速新增</h2>
+<div class="quick-actions">
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='posts', type='news') }}">{{ icon('news') }}<b>最新消息</b><small>學校公布、活動預告</small></a>
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='posts', type='joy') }}">{{ icon('sparkles') }}<b>學生喜訊</b><small>比賽佳績、好人好事</small></a>
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='posts', type='story') }}">{{ icon('chat') }}<b>校園故事</b><small>目標・過程・成果・反思</small></a>
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='awards') }}">{{ icon('trophy') }}<b>學生成就</b><small>單項輸入</small></a>
+  <a class="qa" href="{{ url_for('admin.awards_import') }}">{{ icon('upload') }}<b>大量匯入獎項</b><small>由 Excel 貼上</small></a>
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='events') }}">{{ icon('calendar') }}<b>校曆事項</b><small>活動、考試、假期</small></a>
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='documents', category='notice') }}">{{ icon('bell') }}<b>家長通告</b><small>上載 PDF</small></a>
+  <a class="qa" href="{{ url_for('admin.res_edit', res_name='posts', type='message') }}">{{ icon('edit') }}<b>校長短訊</b><small>每月一篇</small></a>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>內容總覽</h2>
+    <table class="tbl compact">
+      {% for k, n in counts.items() %}{% if RES[k].role != 'admin' or user.role == 'admin' %}
+      <tr><td><a href="{{ url_for('admin.res_list', res_name=k) }}">{{ RES[k].label }}</a></td><td class="num">{{ n }}</td></tr>
+      {% endif %}{% endfor %}
+    </table>
+  </section>
+  <section class="panel">
+    <h2>最近修改</h2>
+    {% if recent %}
+    <ul class="log-list">
+      {% for r in recent %}<li><span class="muted small">{{ r.at[5:16] }}</span> <b>{{ r.username }}</b> {{ r.action }} {{ r.target }}</li>{% endfor %}
+    </ul>
+    {% else %}<p class="muted">暫無紀錄。</p>{% endif %}
+  </section>
+</div>
+
+<section class="panel tips">
+  <h2>更新小貼士</h2>
+  <ul>
+    <li><b>每月</b>：一篇校長短訊；更新校曆及家長通告。</li>
+    <li><b>每兩週</b>：一篇校園故事，以「目標、過程、成果、反思」記錄學生學習。</li>
+    <li><b>每學期</b>：在「網站設定 › 三年發展計劃」更新目前階段及進程。</li>
+    <li>首頁只展示<b>精選</b>內容：消息及獎項勾選「首頁精選／精選成果」即可，完整名單會自動放在內頁。</li>
+    <li>學生資料只寫班別及姓氏（例：5A 陳同學），上載相片前請確認已取得家長同意。</li>
+  </ul>
+</section>
+{% endblock %}

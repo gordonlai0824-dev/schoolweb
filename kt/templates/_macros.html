@@ -1,0 +1,150 @@
+{% macro tag_class(tag) -%}
+{{ {'ai':'tag-ai','char':'tag-char','service':'tag-char','arts':'tag-arts','sport':'tag-sport','academic':'tag-academic'}.get(tag, '') }}
+{%- endmacro %}
+
+{% macro ph_kind(tag) -%}
+{{ {'ai':'ai','char':'char','service':'char','arts':'rose','sport':'warm','academic':'navy','parent':'warm'}.get(tag, '') }}
+{%- endmacro %}
+
+{% macro media(img, label, tag='', cls='') -%}
+{% if img %}
+<div class="ph {{ cls }}" style="background:none"><img src="{{ url_for('public.uploads', name=img) }}" alt="{{ label }}" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div>
+{% else %}
+<div class="ph {% if ph_kind(tag) %}ph-{{ ph_kind(tag) }}{% endif %} {{ cls }}" aria-hidden="true"><span class="ph-label">{{ label|truncate(18, True, '…') }}</span></div>
+{% endif %}
+{%- endmacro %}
+
+{% macro news_card(p) -%}
+<a class="news-card" href="{{ url_for('public.news_detail', post_id=p.id) }}">
+  {{ media(p.image, p.title, p.tag) }}
+  <div class="news-body">
+    <div class="news-meta">
+      <time datetime="{{ p.date }}">{{ p.date|zhdate }}</time>
+      {% if p.tag %}<span class="tag {{ tag_class(p.tag) }}">{{ C.POST_TAGS.get(p.tag, '') }}</span>{% endif %}
+    </div>
+    <h3>{{ p.title }}</h3>
+    {% if p.summary %}<p>{{ p.summary }}</p>{% endif %}
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro award_card(a) -%}
+<article class="card award-card" data-cat="{{ a.category }}" data-year="{{ a.school_year }}">
+  <div class="award-meta">
+    <span class="tag {{ tag_class(C.AWARD_TAG_CLASS.get(a.category)) }}">{{ C.AWARD_CATEGORIES.get(a.category, '') }}</span>
+    <span>{{ a.school_year }} 學年</span>·<time datetime="{{ a.date }}">{{ a.date|zhdate }}</time>
+  </div>
+  <h3>{{ a.competition }}</h3>
+  <div class="award-result">{{ a.result }}</div>
+  {% if a.students %}<p>{{ a.students }}</p>{% endif %}
+  {% if a.story %}<p style="margin-top:6px;color:var(--c-text)">{{ a.story }}</p>{% endif %}
+</article>
+{%- endmacro %}
+
+{% macro event_item(e) -%}
+<li class="event {% if e.kind == 'holiday' %}holiday{% endif %}">
+  <div class="event-date"><span class="d">{{ day_of(e.date) }}</span><span class="m">{{ month_short(e.date) }}</span></div>
+  <div>
+    <h3>{{ e.title }}</h3>
+    <p>{% if e.end_date %}{{ e.date|zhdate(True) }} 至 {{ e.end_date|zhdate(True) }}{% else %}{{ e.date|zhdate }}{% endif %}{% if e.note %}・{{ e.note }}{% endif %}</p>
+  </div>
+</li>
+{%- endmacro %}
+
+{% macro voice_card(v) -%}
+<figure class="voice">
+  <blockquote>{{ v.quote }}</blockquote>
+  <figcaption class="who">
+    <span class="avatar" style="background:{{ {'parent':'var(--c-accent)','student':'var(--c-ai)','alumni':'var(--c-char)'}.get(v.role) }}">{{ v.name[:1] }}</span>
+    <span><b>{{ v.name }}</b>{{ C.VOICE_ROLES.get(v.role, '') }}心聲</span>
+  </figcaption>
+</figure>
+{%- endmacro %}
+
+{% macro doc_list(items, multi=False) -%}
+{% if items %}
+<ul class="doc-list">
+  {% for d in items %}
+  <li>
+    <span class="doc-ico">{{ 'LINK' if d.url and not d.file else (d.file.rsplit('.',1)[-1]|upper if d.file else 'PDF') }}</span>
+    <span class="doc-info"><b>{{ d.title }}</b><small>{% if multi %}{{ C.DOC_CATEGORIES.get(d.category) }}・{% endif %}{{ d.date|zhdate }}</small></span>
+    {% if d.file %}<a class="dl" href="{{ url_for('public.uploads', name=d.file) }}" target="_blank" rel="noopener">下載</a>
+    {% elif d.url %}<a class="dl" href="{{ d.url }}" target="_blank" rel="noopener">開啟</a>
+    {% else %}<small class="muted" style="color:var(--c-muted)">即將上載</small>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}<p style="color:var(--c-muted)">暫無文件。</p>{% endif %}
+{%- endmacro %}
+
+{% macro roadmap() -%}
+{% set stage = (S.plan_stage or '1')|int %}
+{% set start = (S.plan_years or '2026')[:4]|int %}
+<div class="roadmap" role="list">
+  <div class="rm-progress" style="width:{{ [12, 46, 84][stage-1] if stage in [1,2,3] else 0 }}%"></div>
+  {% for i in [1,2,3] %}
+  <div class="rm-step {% if i < stage %}done{% elif i == stage %}now{% endif %}" role="listitem">
+    <div class="rm-dot">{{ i }}</div>
+    <span class="yr">{{ start + i - 1 }}–{{ ((start + i)|string)[-2:] }}</span>
+    <h4>第{{ '一二三'[i-1] }}年：{{ S['roadmap_%d_title' % i] }}</h4>
+    <p>{{ S['roadmap_%d_text' % i] }}</p>
+    {% if i == stage %}<span class="now-tag">目前階段</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro contact_block(is_en=False) -%}
+<div class="contact-grid">
+  <ul class="contact-list">
+    <li><span class="ci">{{ icon('map') }}</span><span><b>{{ 'Address' if is_en else '地址' }}</b>{{ S.address_en if is_en else S.address }}</span></li>
+    <li><span class="ci">{{ icon('phone') }}</span><span><b>{{ 'Phone' if is_en else '電話' }}</b>{{ S.phone }}{% if S.fax %}<br>{{ 'Fax' if is_en else '傳真' }}：{{ S.fax }}{% endif %}</span></li>
+    <li><span class="ci">{{ icon('mail') }}</span><span><b>{{ 'Email' if is_en else '電郵' }}</b>{{ S.email }}</span></li>
+    <li><span class="ci">{{ icon('calendar') }}</span><span><b>{{ 'Office Hours' if is_en else '校務處辦公時間' }}</b>{{ S.office_hours }}</span></li>
+  </ul>
+  <div class="map-box">
+    <iframe title="學校位置地圖" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+      src="https://maps.google.com/maps?q={{ S.map_query|urlencode }}&z=16&output=embed"></iframe>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro widget(w, is_en=False) -%}
+{% if w.kind == 'posts' %}
+  {% if w['items'] %}
+  <div class="grid grid-3">{% for p in w['items'] %}{{ news_card(p) }}{% endfor %}</div>
+  {% else %}<p style="color:var(--c-muted)">暫無內容。</p>{% endif %}
+{% elif w.kind == 'awards' %}
+  <div class="filters" role="group" aria-label="按範疇篩選" data-filter-group="cat">
+    <button class="chip" type="button" data-filter="" aria-pressed="true">全部</button>
+    {% for k, v in C.AWARD_CATEGORIES.items() %}<button class="chip" type="button" data-filter="{{ k }}" aria-pressed="false">{{ v }}</button>{% endfor %}
+    <label class="visually-hidden" for="award-year">學年</label>
+    <select id="award-year" class="chip" data-filter-year>
+      <option value="">所有學年</option>
+      {% for y in w.years %}<option value="{{ y }}">{{ y }} 學年</option>{% endfor %}
+    </select>
+  </div>
+  <div class="grid grid-3" data-filter-target>{% for a in w['items'] %}{{ award_card(a) }}{% endfor %}</div>
+  <p class="filter-empty" hidden style="color:var(--c-muted)">沒有符合的紀錄。</p>
+{% elif w.kind == 'awards_featured' %}
+  <div class="grid grid-3">{% for a in w['items'] %}{{ award_card(a) }}{% endfor %}</div>
+{% elif w.kind == 'voices' %}
+  {% if w['items'] %}<div class="grid grid-2">{% for v in w['items'] %}{{ voice_card(v) }}{% endfor %}</div>{% endif %}
+{% elif w.kind == 'faq' %}
+  {% for key, label, rows in w.groups %}
+    {% if w.grouped %}<h3>{{ label }}</h3>{% endif %}
+    <div class="faq">
+      {% for f in rows %}<details><summary>{{ f.question }}</summary><div class="faq-a">{{ f.answer|safe }}</div></details>{% endfor %}
+    </div>
+  {% endfor %}
+{% elif w.kind == 'events' %}
+  <ul class="event-list">{% for e in w['items'] %}{{ event_item(e) }}{% endfor %}</ul>
+  <p style="margin-top:16px"><a class="link-more" href="{{ url_for('public.calendar') }}">查看全年校曆</a></p>
+{% elif w.kind == 'docs' %}
+  {{ doc_list(w['items'], w.multi) }}
+{% elif w.kind == 'contact' %}
+  {{ contact_block(is_en) }}
+{% elif w.kind == 'plan_roadmap' %}
+  {{ roadmap() }}
+{% endif %}
+{%- endmacro %}
